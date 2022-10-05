@@ -11,7 +11,7 @@ import javax.persistence.ManyToOne;
 @Entity // This tells Hibernate to make a table out of this class
 public class Sale {
   @Id
-  @GeneratedValue(strategy=GenerationType.AUTO)
+  @GeneratedValue(strategy=GenerationType.IDENTITY)
   private Integer id;
 
   private String autoName;
@@ -25,11 +25,11 @@ public class Sale {
   // RELACIONES
 
   @ManyToOne
-  @JoinColumn(name = "seller_id", foreignKey = @ForeignKey(name = "USER_ID_FK"))
+  @JoinColumn(name = "seller_id", foreignKey = @ForeignKey(name = "SELLER_ID_FK"))
   private User seller;
 
   @ManyToOne
-  @JoinColumn(name = "client_id", foreignKey = @ForeignKey(name = "USER_ID_FK"))
+  @JoinColumn(name = "client_id", foreignKey = @ForeignKey(name = "CLIENT_ID_FK"))
   private User client;
 
   @ManyToOne

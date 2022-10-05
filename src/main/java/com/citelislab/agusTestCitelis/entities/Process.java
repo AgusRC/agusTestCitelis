@@ -8,12 +8,24 @@ import javax.persistence.Id;
 @Entity // This tells Hibernate to make a table out of this class
 public class Process {
   @Id
-  @GeneratedValue(strategy=GenerationType.AUTO)
+  @GeneratedValue(strategy=GenerationType.IDENTITY)
   private Integer id;
 
-  private String name;
+  private String moduleName;
 
+  private String name;
+  
   private String envio;
+  
+  // getters setters
+
+  public String getModuleName() {
+    return moduleName;
+  }
+
+  public void setModuleName(String moduleName) {
+    this.moduleName = moduleName;
+  }
 
   public Integer getId() {
     return id;
