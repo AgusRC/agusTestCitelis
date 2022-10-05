@@ -18,7 +18,14 @@ public class EmailDetails {
   private String msgBody;
   private String subject;
   private String attachment;
+  private int processId;
 
+  public int getProcessId() {
+    return processId;
+  }
+  public void setProcessId(int processId) {
+    this.processId = processId;
+  }
   public String getAttachment() {
     return attachment;
   }

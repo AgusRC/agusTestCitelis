@@ -9,6 +9,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 public class EmailController {
   @Autowired private EmailService emailService;
  
+  @PostMapping("/sendProcessMail")
+  public String
+  sendPMail(@RequestBody EmailDetails details)
+  {
+    String status
+      = emailService.sendProcessMail(details);
+
+    return status;
+  }
+
   // Sending a simple Email
   @PostMapping("/sendMail")
   public String
