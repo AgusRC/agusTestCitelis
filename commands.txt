@@ -1,0 +1,12 @@
+sudo docker run --name=mysql1 -d mysql/mysql-server:latest
+
+_07YFK&#6w5+xHWu,PUq67+5ALiE^#Z7
+a1b2c3d4
+
+sudo docker run -d -p 33062:3306 --name mysql-db-agus -e MYSQL_ROOT_PASSWORD=secret --mount src=mysql-db-agus,dst=/var/lib/mysql mysql
+
+# una vez
+docker run -d -p 33062:3306 --name mysql-db-agus -e MYSQL_ROOT_PASSWORD=supersecret lab-citelis-mysql
+# despues 
+sudo docker build -t lab-citelis-mysql .
+
