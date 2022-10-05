@@ -1,4 +1,4 @@
-package main.java.com.citelislab.agusTestCitelis.restservice;
+package com.citelislab.agusTestCitelis.restservice;
 
 import java.util.concurrent.atomic.AtomicLong;
 
