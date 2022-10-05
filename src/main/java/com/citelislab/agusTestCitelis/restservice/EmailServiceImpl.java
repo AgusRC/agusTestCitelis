@@ -2,6 +2,7 @@ package com.citelislab.agusTestCitelis.restservice;
 
 import org.springframework.stereotype.Service;
 
+import com.citelislab.agusTestCitelis.entities.Sale;
 import com.citelislab.agusTestCitelis.entities.User;
 
 import java.io.File;
@@ -20,6 +21,7 @@ public class EmailServiceImpl implements EmailService {
   @Autowired private JavaMailSender javaMailSender;
   @Autowired private UserRepository userRepository;
   @Autowired private ProcessRepository processRepository;
+  @Autowired private SaleRepository saleRepository;
   @Value("${spring.mail.username}") private String sender;
 
   public String sendProcessMail(EmailDetails details) {
@@ -30,13 +32,15 @@ public class EmailServiceImpl implements EmailService {
       // search process
       // debi poner otro nombre a esa entidad jaja
       com.citelislab.agusTestCitelis.entities.Process process = processRepository.findById(details.getProcessId());
-      System.out.println("process found: " + process.getModuleName() + " - " + process.getName());
+      // search sale register
+      Sale sale = saleRepository.findByClient(users);
 
       // Build message
       String message = 
         "Que tal: " + users.getName() +
-        " Hemos recibido su cotización de %auto%, con %nombre_banco%, con plazo de " +
-        "plazo, con un enganche de enganche";
+        " Hemos recibido su cotización de " + sale.getAutoName() + 
+        ", con " + sale.getBankName() + ", con plazo de " +
+        " " + sale.getTerm() + ", con un enganche de $" + sale.getHitch();
 
       System.out.print(message);
 
