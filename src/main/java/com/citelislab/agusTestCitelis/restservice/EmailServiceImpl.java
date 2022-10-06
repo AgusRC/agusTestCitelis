@@ -8,6 +8,7 @@ import com.citelislab.agusTestCitelis.entities.User;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.http.HttpStatus;
 import java.util.Optional;
@@ -18,6 +19,7 @@ public class EmailServiceImpl implements EmailService {
   @Autowired private UserRepository userRepository;
   @Autowired private ProcessRepository processRepository;
   @Autowired private SaleRepository saleRepository;
+  @Autowired private JavaMailSender javaMailSender;
   @Value("${spring.mail.username}") private String sender;
 
   public String sendProcessMail(EmailDetails details) {
@@ -101,7 +103,7 @@ public class EmailServiceImpl implements EmailService {
       mailMessage.setTo(mail);
       mailMessage.setText(messageBody);
       mailMessage.setSubject(details.getSubject());
-      // javaMailSender.send(mailMessage);
+      javaMailSender.send(mailMessage);
       return "Mail Sent succefully";
     } catch (Exception e) {
       return "error to sent: " + e;
