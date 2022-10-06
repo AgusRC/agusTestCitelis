@@ -5,21 +5,13 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.citelislab.agusTestCitelis.entities.Sale;
 import com.citelislab.agusTestCitelis.entities.User;
-import com.mysql.cj.xdevapi.SessionFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.data.jpa.provider.HibernateUtils;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.http.HttpStatus;
-import javax.mail.internet.MimeMessage;
-import javax.mail.MessagingException;
-import java.io.File;
-import java.util.List;
 import java.util.Optional;
+import java.util.List;
 
 @Service
 public class EmailServiceImpl implements EmailService {
@@ -50,10 +42,8 @@ public class EmailServiceImpl implements EmailService {
       );
 
       return res;
-    }
- 
-    catch (ResponseStatusException e) {
-      throw e;
+    } catch (ResponseStatusException e) {
+      throw new ResponseStatusException(e.getStatus(), e.getMessage());
     }
   }
 
@@ -86,9 +76,7 @@ public class EmailServiceImpl implements EmailService {
       }
 
       return "Mail Sent Successfully...";
-    }
- 
-    catch (ResponseStatusException e) {
+    } catch (ResponseStatusException e) {
       throw e;
     }
   }
