@@ -1,0 +1,63 @@
+{
+	"info": {
+		"_postman_id": "fea3cfa9-494e-43ad-b03c-e2a94e826016",
+		"name": "CitelisLab",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "sendProcessMail",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"recipient\":\"cliente11@mail.com\",\n    \"msgBody\":\"Que tal %nombre_cliente%: Hemos recibido su cotización de %auto%, con %nombre_banco%, con plazo de %plazo%, con un enganche de %enganche%\",\n    \"subject\": \"test mail\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8181/sendProcessMail",
+					"host": [
+						"localhost"
+					],
+					"port": "8181",
+					"path": [
+						"sendProcessMail"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "sendProcessAllClients",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"msgBody\":\"Que tal %nombre_cliente%: Hemos recibido su cotización de %auto%, con %nombre_banco%, con plazo de %plazo%, con un enganche de %enganche%\",\n    \"subject\": \"test mail\",\n    \"processId\": 1\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8181/sendProcessAllClients",
+					"host": [
+						"localhost"
+					],
+					"port": "8181",
+					"path": [
+						"sendProcessAllClients"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
