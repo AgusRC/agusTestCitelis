@@ -21,9 +21,6 @@ public class EmailController {
       System.out.println(e.getMessage());
       throw new ResponseStatusException(e.getStatus(), e.getMessage());
     }
-    
-
-   
   }
 
   @PostMapping("/sendProcessAllClients")
