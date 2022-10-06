@@ -14,9 +14,6 @@
  Date: 04/10/2022 21:05:00
 */
 
-CREATE DATABASE citelis_lab;
-USE citelis_lab;
-
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 

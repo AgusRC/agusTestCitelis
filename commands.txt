@@ -1,3 +1,6 @@
+#### info auxoliar jeje
+
+
 sudo docker run --name=mysql1 -d mysql/mysql-server:latest
 
 _07YFK&#6w5+xHWu,PUq67+5ALiE^#Z7
@@ -5,8 +8,16 @@ a1b2c3d4
 
 sudo docker run -d -p 33062:3306 --name mysql-db-agus -e MYSQL_ROOT_PASSWORD=secret --mount src=mysql-db-agus,dst=/var/lib/mysql mysql
 
-# una vez
-docker run -d -p 33062:3306 --name mysql-db-agus -e MYSQL_ROOT_PASSWORD=supersecret lab-citelis-mysql
-# despues 
-sudo docker build -t lab-citelis-mysql .
+# Network
+ sudo docker network create springmysql-net
 
+
+
+# Mysql 
+cd sql-scripts
+sudo docker build -t lab-citelis-mysql .
+docker run -d -p 33062:3306 --name mysql-db-agus --network springmysql-net -e MYSQL_ROOT_PASSWORD=secret lab-citelis-mysql
+
+# Spring boot
+sudo docker build -t agus_citelis_springboot .
+docker run --network springmysql-net -p 8181:8181 --env SPRING_PROFILES_ACTIVE=docker agus_citelis_springboot
