@@ -3,7 +3,7 @@ package com.citelislab.agusTestCitelis;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
+@SpringBootTest(classes = {com.citelislab.agusTestCitelis.AgusTestCitelisApplication.class})
 class AgusTestCitelisApplicationTests {
 
 	@Test
