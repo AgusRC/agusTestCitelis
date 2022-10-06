@@ -1,17 +1,18 @@
 package com.citelislab.agusTestCitelis.restservice;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.citelislab.agusTestCitelis.entities.Sale;
 import com.citelislab.agusTestCitelis.entities.User;
 
 import java.io.File;
-import java.util.List;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.HttpStatus;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -28,21 +29,26 @@ public class EmailServiceImpl implements EmailService {
     try {
       // search user
       User users = userRepository.findByEmail(details.getRecipient());
+      if (users == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontro un usuario con este email");
       System.out.println("Users found with email" + details.getRecipient() + ": " + users.getName());
+      
       // search process
       // debi poner otro nombre a esa entidad jaja
       com.citelislab.agusTestCitelis.entities.Process process = processRepository.findById(details.getProcessId());
+      if (process == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontro un proceso con este id");
       // search sale register
       Sale sale = saleRepository.findByClient(users);
+      if (sale == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Este usuario no tiene una venta activa");
 
       // Build message
-      String message = 
-        "Que tal: " + users.getName() +
-        " Hemos recibido su cotización de " + sale.getAutoName() + 
-        ", con " + sale.getBankName() + ", con plazo de " +
-        " " + sale.getTerm() + ", con un enganche de $" + sale.getHitch();
-
-      System.out.print(message);
+      // No supe si los placeholders son solo estos o se necesitarian definir, para asi mismo agregar validaciones
+      String messageBody = details.getMsgBody();
+      messageBody = messageBody.replace("%nombre_cliente%", users.getName());
+      messageBody = messageBody.replace("%auto%", sale.getAutoName());
+      messageBody = messageBody.replace("%nombre_banco%", sale.getBankName());
+      messageBody = messageBody.replace("%plazo%", sale.getTerm());
+      messageBody = messageBody.replace("%enganche%", sale.getHitch());
+      System.out.println(messageBody);
 
       // Creating a simple mail message
       SimpleMailMessage mailMessage
@@ -51,16 +57,16 @@ public class EmailServiceImpl implements EmailService {
       // Setting up necessary details
       mailMessage.setFrom(sender);
       mailMessage.setTo(details.getRecipient());
-      mailMessage.setText(details.getMsgBody());
+      mailMessage.setText(messageBody);
       mailMessage.setSubject(details.getSubject());
 
       // Sending the mail
-      javaMailSender.send(mailMessage);
+      // javaMailSender.send(mailMessage);
       return "Mail Sent Successfully...";
     }
  
-    catch (Exception e) {
-      return "Error while Sending Mail: " + e;
+    catch (ResponseStatusException e) {
+      throw e;
     }
   }
 
@@ -82,7 +88,7 @@ public class EmailServiceImpl implements EmailService {
     }
  
     catch (Exception e) {
-      return "Error while Sending Mail: " + e;
+      throw e;
     }
   }
  
