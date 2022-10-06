@@ -5,21 +5,24 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.citelislab.agusTestCitelis.entities.Sale;
 import com.citelislab.agusTestCitelis.entities.User;
+import com.mysql.cj.xdevapi.SessionFactory;
 
-import java.io.File;
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.http.HttpStatus;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.data.jpa.provider.HibernateUtils;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.http.HttpStatus;
+import javax.mail.internet.MimeMessage;
+import javax.mail.MessagingException;
+import java.io.File;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class EmailServiceImpl implements EmailService {
-  @Autowired private JavaMailSender javaMailSender;
   @Autowired private UserRepository userRepository;
   @Autowired private ProcessRepository processRepository;
   @Autowired private SaleRepository saleRepository;
@@ -28,40 +31,60 @@ public class EmailServiceImpl implements EmailService {
   public String sendProcessMail(EmailDetails details) {
     try {
       // search user
-      User users = userRepository.findByEmail(details.getRecipient());
-      if (users == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontro un usuario con este email");
-      System.out.println("Users found with email" + details.getRecipient() + ": " + users.getName());
+      User user = userRepository.findByEmail(details.getRecipient());
+      if (user == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontro un usuario con este email");
       
-      // search process
-      // debi poner otro nombre a esa entidad jaja
-      com.citelislab.agusTestCitelis.entities.Process process = processRepository.findById(details.getProcessId());
-      if (process == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontro un proceso con este id");
       // search sale register
-      Sale sale = saleRepository.findByClient(users);
+      Sale sale = saleRepository.findByClient(user);
       if (sale == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Este usuario no tiene una venta activa");
 
       // Build message
-      // No supe si los placeholders son solo estos o se necesitarian definir, para asi mismo agregar validaciones
-      String messageBody = details.getMsgBody();
-      messageBody = messageBody.replace("%nombre_cliente%", users.getName());
-      messageBody = messageBody.replace("%auto%", sale.getAutoName());
-      messageBody = messageBody.replace("%nombre_banco%", sale.getBankName());
-      messageBody = messageBody.replace("%plazo%", sale.getTerm());
-      messageBody = messageBody.replace("%enganche%", sale.getHitch());
-      System.out.println(messageBody);
+      String res = buildAndSendMail(
+        user.getName(),
+        sale.getAutoName(),
+        sale.getBankName(),
+        sale.getTerm(),
+        sale.getHitch(),
+        user.getEmail(),
+        details
+      );
 
-      // Creating a simple mail message
-      SimpleMailMessage mailMessage
-          = new SimpleMailMessage();
+      return res;
+    }
+ 
+    catch (ResponseStatusException e) {
+      throw e;
+    }
+  }
 
-      // Setting up necessary details
-      mailMessage.setFrom(sender);
-      mailMessage.setTo(details.getRecipient());
-      mailMessage.setText(messageBody);
-      mailMessage.setSubject(details.getSubject());
+  public String sendAllProccessMail(EmailDetails details) {
+    try {
+      // search process
+      // debi poner otro nombre a esa entidad jaja, no recordaba que "Process" es reservado de java
+      com.citelislab.agusTestCitelis.entities.Process process = processRepository.findById(details.getProcessId());
+      if (process == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontro un proceso con este id");
+      // search sale register
+      List<Integer> usersIds = saleRepository.findUsersOfProcess(process.getId());
+      for (Integer userId : usersIds) {
 
-      // Sending the mail
-      // javaMailSender.send(mailMessage);
+        // buscar email y mandar email a cada uno
+        Optional<User> userToSend = userRepository.findById(userId);
+
+        // buscar datos de ventas
+        Sale sale = saleRepository.findByClient(userToSend.get());
+
+        // Build message
+        buildAndSendMail(
+          userToSend.get().getName(),
+          sale.getAutoName(),
+          sale.getBankName(),
+          sale.getTerm(),
+          sale.getHitch(),
+          userToSend.get().getEmail(),
+          details
+        );
+      }
+
       return "Mail Sent Successfully...";
     }
  
@@ -70,62 +93,30 @@ public class EmailServiceImpl implements EmailService {
     }
   }
 
-  public String sendSimpleMail(EmailDetails details) {
+  private String buildAndSendMail(String clientName, String autoName, String bank_name, String term, String hitch, String mail, EmailDetails details) {
     try {
-      // Creating a simple mail message
+      // No supe si los placeholders son solo estos o se necesitarian definir, para asi mismo agregar validaciones
+      String messageBody = details.getMsgBody();
+      messageBody = messageBody.replace("%nombre_cliente%", clientName);
+      messageBody = messageBody.replace("%auto%", autoName);
+      messageBody = messageBody.replace("%nombre_banco%", bank_name);
+      messageBody = messageBody.replace("%plazo%", term);
+      messageBody = messageBody.replace("%enganche%", hitch);
+      System.out.println(messageBody);
+
+      // Creacion del mensaje
       SimpleMailMessage mailMessage
           = new SimpleMailMessage();
 
-      // Setting up necessary details
+      
       mailMessage.setFrom(sender);
-      mailMessage.setTo(details.getRecipient());
-      mailMessage.setText(details.getMsgBody());
+      mailMessage.setTo(mail);
+      mailMessage.setText(messageBody);
       mailMessage.setSubject(details.getSubject());
-
-      // Sending the mail
-      javaMailSender.send(mailMessage);
-      return "Mail Sent Successfully...";
-    }
- 
-    catch (Exception e) {
-      throw e;
-    }
-  }
- 
-  public String
-  sendMailWithAttachment(EmailDetails details) {
-    // Creating a mime message
-    MimeMessage mimeMessage
-        = javaMailSender.createMimeMessage();
-    MimeMessageHelper mimeMessageHelper;
-
-    try {
-      // Setting multipart as true for attachments to
-      // be send
-      mimeMessageHelper
-          = new MimeMessageHelper(mimeMessage, true);
-      mimeMessageHelper.setFrom(sender);
-      mimeMessageHelper.setTo(details.getRecipient());
-      mimeMessageHelper.setText(details.getMsgBody());
-      mimeMessageHelper.setSubject(
-          details.getSubject());
-
-      // Adding the attachment
-      FileSystemResource file
-          = new FileSystemResource(
-              new File(details.getAttachment()));
-
-      mimeMessageHelper.addAttachment(
-          file.getFilename(), file);
-
-      // Sending the mail
-      javaMailSender.send(mimeMessage);
-      return "Mail sent Successfully";
-    }
-
-    catch (MessagingException e) {
-      System.out.print(e);
-      return "Error while sending mail: " + e;
+      // javaMailSender.send(mailMessage);
+      return "Mail Sent succefully";
+    } catch (Exception e) {
+      return "error to sent: " + e;
     }
   }
 }

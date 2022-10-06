@@ -19,6 +19,13 @@ public class EmailController {
     return status;
   }
 
+  @PostMapping("/sendProcessAllClients")
+  public String sendAllClients(@RequestBody EmailDetails details) {
+    String status = emailService.sendAllProccessMail(details);
+
+    return status;
+  }
+
   // Sending a simple Email
   @PostMapping("/sendMail")
   public String
